@@ -18,7 +18,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"syscall"
 	"unsafe"
 
 	"golang.org/x/sys/unix"
@@ -156,23 +155,23 @@ func SendPacket(ifName string, packet []byte) {
 		return
 	}
 
-	fd, err := syscall.Socket(
-		syscall.AF_PACKET,
-		syscall.SOCK_RAW,
+	fd, err := unix.Socket(
+		unix.AF_PACKET,
+		unix.SOCK_RAW,
 		int(htons(0x86DD)),
 	)
 	if err != nil {
 		return
 	}
-	defer syscall.Close(fd)
+	defer unix.Close(fd)
 
-	sll := &syscall.SockaddrLinklayer{
+	sll := &unix.SockaddrLinklayer{
 		Ifindex:  iface.Index,
 		Protocol: htons(0x86DD),
 	}
 
 	// Kernel will add L2 header automatically
-	syscall.Sendto(fd, packet, 0, sll)
+	unix.Sendto(fd, packet, 0, sll)
 }
 
 func htons(i uint16) uint16 {
